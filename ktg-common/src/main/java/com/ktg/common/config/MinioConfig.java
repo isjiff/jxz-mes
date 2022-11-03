@@ -9,8 +9,8 @@ import org.springframework.context.annotation.Configuration;
  * Minio 配置信息
  *
  */
-//@Configuration
-//@ConfigurationProperties(prefix = "minio")
+@Configuration
+@ConfigurationProperties(prefix = "minio")
 public class MinioConfig {
     /**
      * 服务地址
@@ -72,7 +72,7 @@ public class MinioConfig {
         MinioConfig.bucketName = bucketName;
     }
 
-    //@Bean
+    @Bean
     public MinioClient getMinioClient()
     {
         return MinioClient.builder().endpoint(url).credentials(accessKey, secretKey).build();

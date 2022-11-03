@@ -48,7 +48,7 @@ public class WmTransactionServiceImpl implements IWmTransactionService
         if(StringUtils.isNotNull(ms)){
             //MS已存在
             BigDecimal resultQuantity =ms.getQuantityOnhand().add(quantity);
-            if(resultQuantity.compareTo(new BigDecimal(0))<0){
+            if(wmTransaction.isStorageCheckFlag() && resultQuantity.compareTo(new BigDecimal(0))<0){
                 throw new BussinessException("库存数量不足！");
             }
             stock.setQuantityOnhand(resultQuantity);
@@ -118,6 +118,19 @@ public class WmTransactionServiceImpl implements IWmTransactionService
                 stock.setVendorCode(transaction.getVendorCode());
                 stock.setVendorName(transaction.getVendorName());
                 stock.setVendorNick(transaction.getVendorNick());
+            }
+            //使用库存事务日期初始化入库日期
+            //一般在入库的时候才会涉及到materialStock的新增，出库的时候都是出的现有库存
+            if(StringUtils.isNotNull(transaction.getRecptDate())){
+                stock.setRecptDate(transaction.getRecptDate());
+            }else{
+                stock.setRecptDate(new Date());
+            }
+
+            //使用库存事务上的生产工单初始化库存记录上的生产工单，以支持某些情况下库存需要标记生产工单的情况
+            if(StringUtils.isNotNull(transaction.getWorkorderId())){
+                stock.setWorkorderId(transaction.getWorkorderId());
+                stock.setWorkorderCode(transaction.getWorkorderCode());
             }
             stock.setExpireDate(transaction.getExpireDate());
         }

@@ -51,7 +51,7 @@
             AND part_type = #{partType}
         </if>
         <if test="partCode != null and partCode != ''">
-            AND part_code like concat('%', #{partCode}, '%') <!-- =改为模糊查询 -->
+            AND part_code = #{partCode}
         </if>
         <if test="partName != null and partName != ''">
             AND part_name like concat('%', #{partName}, '%')

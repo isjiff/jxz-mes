@@ -30,6 +30,7 @@ public interface ProRouteProcessMapper
 
     public ProRouteProcess checkOrderNumExists(ProRouteProcess proRouteProcess);
     public ProRouteProcess checkProcessExists(ProRouteProcess proRouteProcess);
+    public ProRouteProcess checkUpdateFlagUnique(ProRouteProcess proRouteProcess);
 
     public ProRouteProcess findPreProcess(ProRouteProcess proRouteProcess);
 
@@ -65,4 +66,11 @@ public interface ProRouteProcessMapper
      * @return 结果
      */
     public int deleteProRouteProcessByRecordIds(Long[] recordIds);
+
+    /**
+     * 根据工艺路线ID删除所有工序配置
+     * @param routeId
+     * @return
+     */
+    public int deleteByRouteId(Long routeId);
 }

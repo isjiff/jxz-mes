@@ -20,6 +20,7 @@ create table pro_workorder (
   client_id                   bigint(20)                                 comment '客户ID',
   client_code                 varchar(64)                                comment '客户编码',
   client_name                 varchar(255)                               comment '客户名称',
+  batch_code                  varchar(64)                                comment '批次号',
   request_date                datetime        not null                   comment '需求日期',
   parent_id                   bigint(20)      default 0 not null         comment '父工单',
   ancestors                   varchar(500)    not null                   comment '所有父节点ID',
@@ -153,6 +154,7 @@ create table pro_route_process (
   default_pre_time               int(11)         default 0                  comment '准备时间',
   default_suf_time               int(11)         default 0                  comment '等待时间',
   color_code                     char(7)         default '#00AEF3'          comment '甘特图显示颜色',
+  key_flag                       varchar(64)     default 'N'                comment '关键工序',
   remark                         varchar(500)    default ''                 comment '备注',
   attr1                          varchar(64)     default null               comment '预留字段1',
   attr2                          varchar(255)    default null               comment '预留字段2',
@@ -194,6 +196,35 @@ create table pro_route_product (
 ) engine=innodb auto_increment=200 comment = '产品制程';
 
 
+
+-- ----------------------------
+-- 4、产品制程物料BOM表
+-- ----------------------------
+drop table if exists pro_route_product_bom;
+create table pro_route_product_bom (
+  record_id                      bigint(20)      not null auto_increment    comment '记录ID',
+  route_id                       bigint(20)      not null                   comment '工艺路线ID',
+  process_id                     bigint(20)      not null                   comment '工序ID',
+  product_id                     bigint(20)      not null                   comment '产品BOM中的唯一ID',
+  item_id                        bigint(20)      not null                   comment '产品物料ID',
+  item_code                      varchar(64)     not null                   comment '产品物料编码',
+  item_name                      varchar(255)    not null                   comment '产品物料名称',
+  specification                  varchar(500)    default null               comment '规格型号',
+  unit_of_measure                varchar(64)     not null                   comment '单位',
+  quantity                       double(12,2)         default 1                  comment '用料比例',
+  remark                         varchar(500)    default ''                 comment '备注',
+  attr1                          varchar(64)     default null               comment '预留字段1',
+  attr2                          varchar(255)    default null               comment '预留字段2',
+  attr3                          int(11)         default 0                  comment '预留字段3',
+  attr4                          int(11)         default 0                  comment '预留字段4',
+  create_by                      varchar(64)     default ''                 comment '创建者',
+  create_time 	                 datetime                                   comment '创建时间',
+  update_by                      varchar(64)     default ''                 comment '更新者',
+  update_time                    datetime                                   comment '更新时间',
+  primary key (record_id)
+) engine=innodb auto_increment=200 comment = '产品制程物料BOM表';
+
+
 -- ----------------------------
 -- 4、生产任务表
 -- ----------------------------
@@ -221,9 +252,9 @@ create table pro_task (
   quantity_quanlify              double(14,2)    default 0                  comment '合格品数量',
   quantity_unquanlify            double(14,2)    default 0                  comment '不良品数量',
   quantity_changed               double(14,2)    default 0                  comment '调整数量',
-  client_id                      bigint(20)      not null                   comment '客户ID',
-  client_code                    varchar(64)     not null                   comment '客户编码',
-  client_name                    varchar(255)    not null                   comment '客户名称',
+  client_id                      bigint(20)                                 comment '客户ID',
+  client_code                    varchar(64)                                comment '客户编码',
+  client_name                    varchar(255)                               comment '客户名称',
   client_nick                    varchar(255)                               comment '客户简称',
   start_time                     datetime        default CURRENT_TIMESTAMP  comment '开始生产时间',
   duration                       int(11)         default 1                  comment '生产时长',
@@ -250,6 +281,7 @@ create table pro_task (
 drop table if exists pro_feedback;
 create table pro_feedback (
   record_id                      bigint(20)      not null auto_increment    comment '记录ID',
+  feedback_type                  varchar(64)     not null                   comment '报工类型',
   workstation_id                 bigint(20)      not null                   comment '工作站ID',
   workstation_code               varchar(64)                                comment '工作站编号',
   workstation_name               varchar(255)                               comment '工作站名称',
@@ -258,6 +290,11 @@ create table pro_feedback (
   workorder_name                 varchar(255)                               comment '生产工单名称',
   task_id                        bigint(20)                                 comment '生产任务ID',
   task_code                      varchar(64)                                comment '生产任务编号',
+  item_id                        bigint(20)      not null                   comment '产品物料ID',
+  item_code                      varchar(64)     not null                   comment '产品物料编码',
+  item_name                      varchar(255)    not null                   comment '产品物料名称',
+  unit_of_measure                varchar(64)                                comment '单位',
+  specification                  varchar(500)                               comment '规格型号',
   quantity                       double(14,2)                               comment '排产数量',
   quantity_feedback              double(14,2)                               comment '本次报工数量',
   quantity_qualified             double(14,2)                               comment '合格品数量',
@@ -266,6 +303,9 @@ create table pro_feedback (
   nick_name                      varchar(64)                                comment '昵称',
   feedback_channel               varchar(64)                                comment '报工途径',
   feedback_time                  datetime                                   comment '报工时间',
+  record_user                    varchar(64)                                comment '记录人',
+  record_nick                    varchar(64)                                comment '记录人名称',
+  status                         varchar(64)     default 'PREPARE'          comment '状态',
   remark                         varchar(500)    default ''                 comment '备注',
   attr1                          varchar(64)     default null               comment '预留字段1',
   attr2                          varchar(255)    default null               comment '预留字段2',

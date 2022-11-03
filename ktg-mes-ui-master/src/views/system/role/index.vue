@@ -1,7 +1,16 @@
 <template>
   <div class="app-container">
+  	<!-- Element组件 el-form 表单 -->
+  	<!-- :model：用来指定表单使用的数据 -->
+  	<!-- ref：绑定控件 -->
+  	<!-- :inline：行内表单模式，显示为一行 -->
+  	<!-- v-show：基于表达式值的真假性，来改变元素的可见性，此处showSearch的值为true -->
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch">
-      <el-form-item label="角色名称" prop="roleName">
+      <!-- prop：表单校验 -->
+      <el-form-item label="角色名称" prop="roleName">  
+      	<!-- v-model：获取v-model绑定的数据 -->
+      	<!-- clearable：在输入框内末尾添加删除图标，点击可清空当前输入框内容 -->
+      	<!-- @keyup.enter.native：回车调用搜索方法handleQuery，v-model数据层一定要在@keyup.enter.native 事件之前。  -->
         <el-input
           v-model="queryParams.roleName"
           placeholder="请输入角色名称"
@@ -26,6 +35,7 @@
           clearable
           style="width: 240px"
         >
+          <!-- v-for： -->
           <el-option
             v-for="dict in dict.type.sys_normal_disable"
             :key="dict.value"
@@ -46,13 +56,20 @@
         ></el-date-picker>
       </el-form-item>
       <el-form-item>
+        <!-- icon：element提供了一套常用的图标集合。 -->
+        <!-- 默认按钮：primary主要蓝色按钮 -->
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+        <!-- 默认按钮：无样式 -->
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
       </el-form-item>
     </el-form>
 
+	<!-- :gutter：分栏左右间隔。 class：与style绑定，对应assets/styles/ruoyi.scss中的.mb8样式 -->
     <el-row :gutter="10" class="mb8">
+      <!-- :span：layout布局，基础24分栏，通过col组件的span属性自由组合布局 -->
       <el-col :span="1.5">
+        <!-- plain：朴素按钮 -->
+        <!-- v-hasPermi：权限字符串，对应菜单管理的权限标识；v-hasRole：角色字符串，对应角色管理的权限字符。若依封装的指令权限，实现按钮级别的权限判断。 -->
         <el-button
           type="primary"
           plain
@@ -62,6 +79,7 @@
           v-hasPermi="['system:role:add']"
         >新增</el-button>
       </el-col>
+      <!-- :disabled="single"：默认禁用，此时single的值为true，当多选框被选中单个时single值为false，此时修改按钮可用 -->
       <el-col :span="1.5">
         <el-button
           type="success"
@@ -97,13 +115,17 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
+	<!-- @selection-change：当选择项selection发生变化时触发此事件 -->
     <el-table v-loading="loading" :data="roleList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="角色编号" prop="roleId" width="120" />
+      <!-- :show-overflow-tooltip：使单元格超出的内容自动折叠显示为...当鼠标移入时单元格的上方会弹出一个小tips来显示单元格得所有内容。 -->
       <el-table-column label="角色名称" prop="roleName" :show-overflow-tooltip="true" width="150" />
       <el-table-column label="权限字符" prop="roleKey" :show-overflow-tooltip="true" width="150" />
       <el-table-column label="显示顺序" prop="roleSort" width="100" />
       <el-table-column label="状态" align="center" width="100">
+      <!-- slot-scope：取得作用域插槽:data绑定的数据 -->
+      <!-- el-switch：开关； active-value：启用值； inactive-value：停用值。 -->
         <template slot-scope="scope">
           <el-switch
             v-model="scope.row.status"
@@ -115,6 +137,7 @@
       </el-table-column>
       <el-table-column label="创建时间" align="center" prop="createTime" width="180">
         <template slot-scope="scope">
+        <!-- parseTime：vue时间格式化 -->
           <span>{{ parseTime(scope.row.createTime) }}</span>
         </template>
       </el-table-column>
@@ -134,6 +157,7 @@
             @click="handleDelete(scope.row)"
             v-hasPermi="['system:role:remove']"
           >删除</el-button>
+          <!-- el-dropdown：下拉菜单 -->
           <el-dropdown size="mini" @command="(command) => handleCommand(command, scope.row)" v-hasPermi="['system:role:edit']">
             <span class="el-dropdown-link">
               <i class="el-icon-d-arrow-right el-icon--right"></i>更多

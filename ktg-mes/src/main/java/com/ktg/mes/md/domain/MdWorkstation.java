@@ -54,6 +54,42 @@ public class MdWorkstation extends BaseEntity
     @Excel(name = "工序名称")
     private String processName;
 
+    /** 线边库ID */
+    @Excel(name = "仓库ID")
+    private Long warehouseId;
+
+    /** 线边库编码 */
+    @Excel(name = "仓库编码")
+    private String warehouseCode;
+
+    /** 线边库名称 */
+    @Excel(name = "仓库名称")
+    private String warehouseName;
+
+    /** 库区ID */
+    @Excel(name = "库区ID")
+    private Long locationId;
+
+    /** 库区编码 */
+    @Excel(name = "库区编码")
+    private String locationCode;
+
+    /** 库区名称 */
+    @Excel(name = "库区名称")
+    private String locationName;
+
+    /** 库位ID */
+    @Excel(name = "库位ID")
+    private Long areaId;
+
+    /** 库位编码 */
+    @Excel(name = "库位编码")
+    private String areaCode;
+
+    /** 库位名称 */
+    @Excel(name = "库位名称")
+    private String areaName;
+
     /** 是否启用 */
     @Excel(name = "是否启用")
     private String enableFlag;
@@ -160,7 +196,80 @@ public class MdWorkstation extends BaseEntity
     {
         return processName;
     }
-    public void setEnableFlag(String enableFlag) 
+
+    public Long getWarehouseId() {
+        return warehouseId;
+    }
+
+    public void setWarehouseId(Long warehouseId) {
+        this.warehouseId = warehouseId;
+    }
+
+    public String getWarehouseCode() {
+        return warehouseCode;
+    }
+
+    public void setWarehouseCode(String warehouseCode) {
+        this.warehouseCode = warehouseCode;
+    }
+
+    public String getWarehouseName() {
+        return warehouseName;
+    }
+
+    public void setWarehouseName(String warehouseName) {
+        this.warehouseName = warehouseName;
+    }
+
+    public Long getLocationId() {
+        return locationId;
+    }
+
+    public void setLocationId(Long locationId) {
+        this.locationId = locationId;
+    }
+
+    public String getLocationCode() {
+        return locationCode;
+    }
+
+    public void setLocationCode(String locationCode) {
+        this.locationCode = locationCode;
+    }
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
+    }
+
+    public Long getAreaId() {
+        return areaId;
+    }
+
+    public void setAreaId(Long areaId) {
+        this.areaId = areaId;
+    }
+
+    public String getAreaCode() {
+        return areaCode;
+    }
+
+    public void setAreaCode(String areaCode) {
+        this.areaCode = areaCode;
+    }
+
+    public String getAreaName() {
+        return areaName;
+    }
+
+    public void setAreaName(String areaName) {
+        this.areaName = areaName;
+    }
+
+    public void setEnableFlag(String enableFlag)
     {
         this.enableFlag = enableFlag;
     }
@@ -208,27 +317,31 @@ public class MdWorkstation extends BaseEntity
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
-            .append("workstationId", getWorkstationId())
-            .append("workstationCode", getWorkstationCode())
-            .append("workstationName", getWorkstationName())
-            .append("workstationAddress", getWorkstationAddress())
-            .append("workshopId", getWorkshopId())
-            .append("workshopCode", getWorkshopCode())
-            .append("workshopName", getWorkshopName())
-            .append("processId", getProcessId())
-            .append("processCode", getProcessCode())
-            .append("processName", getProcessName())
-            .append("enableFlag", getEnableFlag())
-            .append("remark", getRemark())
-            .append("attr1", getAttr1())
-            .append("attr2", getAttr2())
-            .append("attr3", getAttr3())
-            .append("attr4", getAttr4())
-            .append("createBy", getCreateBy())
-            .append("createTime", getCreateTime())
-            .append("updateBy", getUpdateBy())
-            .append("updateTime", getUpdateTime())
-            .toString();
+        return "MdWorkstation{" +
+                "workstationId=" + workstationId +
+                ", workstationCode='" + workstationCode + '\'' +
+                ", workstationName='" + workstationName + '\'' +
+                ", workstationAddress='" + workstationAddress + '\'' +
+                ", workshopId=" + workshopId +
+                ", workshopCode='" + workshopCode + '\'' +
+                ", workshopName='" + workshopName + '\'' +
+                ", processId=" + processId +
+                ", processCode='" + processCode + '\'' +
+                ", processName='" + processName + '\'' +
+                ", warehouseId=" + warehouseId +
+                ", warehouseCode='" + warehouseCode + '\'' +
+                ", warehouseName='" + warehouseName + '\'' +
+                ", locationId=" + locationId +
+                ", locationCode='" + locationCode + '\'' +
+                ", locationName='" + locationName + '\'' +
+                ", areaId=" + areaId +
+                ", areaCode='" + areaCode + '\'' +
+                ", areaName='" + areaName + '\'' +
+                ", enableFlag='" + enableFlag + '\'' +
+                ", attr1='" + attr1 + '\'' +
+                ", attr2='" + attr2 + '\'' +
+                ", attr3=" + attr3 +
+                ", attr4=" + attr4 +
+                '}';
     }
 }

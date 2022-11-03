@@ -4,12 +4,12 @@ import cn.hutool.core.collection.CollUtil;
 import com.ktg.common.constant.UserConstants;
 import com.ktg.common.exception.BussinessException;
 import com.ktg.common.utils.bean.BeanUtils;
+import com.ktg.mes.wm.domain.WmStorageArea;
+import com.ktg.mes.wm.domain.WmStorageLocation;
 import com.ktg.mes.wm.domain.WmTransaction;
-import com.ktg.mes.wm.domain.tx.IssueTxBean;
-import com.ktg.mes.wm.domain.tx.ItemRecptTxBean;
-import com.ktg.mes.wm.domain.tx.RtVendorTxBean;
-import com.ktg.mes.wm.service.IStorageCoreService;
-import com.ktg.mes.wm.service.IWmTransactionService;
+import com.ktg.mes.wm.domain.WmWarehouse;
+import com.ktg.mes.wm.domain.tx.*;
+import com.ktg.mes.wm.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,8 +23,17 @@ public class StorageCoreServiceImpl implements IStorageCoreService {
     @Autowired
     private IWmTransactionService wmTransactionService;
 
+    @Autowired
+    private IWmWarehouseService wmWarehouseService;
+
+    @Autowired
+    private IWmStorageLocationService wmStorageLocationService;
+
+    @Autowired
+    private IWmStorageAreaService wmStorageAreaService;
+
     /**
-     * 处理入库单行
+     * 采购入库
      * @param lines
      */
     @Override
@@ -42,20 +51,14 @@ public class StorageCoreServiceImpl implements IStorageCoreService {
             transaction.setTransactionFlag(1); //库存增加
             transaction.setTransactionDate(new Date());
             wmTransactionService.processTransaction(transaction);
-//            transaction.setItemId(line.getItemId());
-//            transaction.setItemCode(line.getItemCode());
-//            transaction.setItemName(line.getItemName());
-//            transaction.setSpecification(line.getSpecification());
-//            transaction.setUnitOfMeasure(line.getUnitOfMeasure());
-//            transaction.setBatchCode(line.getBatchCode());
-//            transaction.setWarehouseId(line.getWarehouseId());
-//            transaction.setWarehouseCode(line.getWarehouseCode());
-//            transaction.setWarehouseName(line.getWarehouseName());
-//            transaction.setLocationId(line.getLocationId());
         }
 
     }
 
+    /**
+     * 供应商退货
+     * @param lines
+     */
     @Override
     public void processRtVendor(List<RtVendorTxBean> lines) {
         String transactionType = UserConstants.TRANSACTION_TYPE_ITEM_RTV;
@@ -75,21 +78,255 @@ public class StorageCoreServiceImpl implements IStorageCoreService {
 
     }
 
+    /**
+     * 生产领料
+     * @param lines
+     */
     @Override
     public void processIssue(List<IssueTxBean> lines) {
-        String transactionType = UserConstants.TRANSACTION_TYPE_ITEM_ISSUE;
         if(CollUtil.isEmpty(lines)){
             throw new BussinessException("没有需要处理的领料单行");
         }
 
+        String transactionType_out = UserConstants.TRANSACTION_TYPE_ITEM_ISSUE_OUT;
+        String transactionType_in = UserConstants.TRANSACTION_TYPE_ITEM_ISSUE_IN;
         for(int i=0;i<lines.size();i++){
             IssueTxBean line = lines.get(i);
+            //这里先构造一条原库存减少的事务
+            WmTransaction transaction_out = new WmTransaction();
+            transaction_out.setTransactionType(transactionType_out);
+            BeanUtils.copyBeanProp(transaction_out,line);
+            transaction_out.setTransactionFlag(-1);//库存减少
+            transaction_out.setTransactionDate(new Date());
+            wmTransactionService.processTransaction(transaction_out);
+
+            //再构造一条目的库存增加的事务
+            WmTransaction transaction_in = new WmTransaction();
+            transaction_in.setTransactionType(transactionType_in);
+            BeanUtils.copyBeanProp(transaction_in,line);
+            transaction_in.setTransactionFlag(1);//库存增加
+
+            //由于是新增的库存记录所以需要将查询出来的库存记录ID置为空
+            transaction_in.setMaterialStockId(null);
+
+            //这里使用系统默认生成的线边库初始化对应的入库仓库、库区、库位
+            WmWarehouse warehouse = wmWarehouseService.selectWmWarehouseByWarehouseCode(UserConstants.VIRTUAL_WH);
+            transaction_in.setWarehouseId(warehouse.getWarehouseId());
+            transaction_in.setWarehouseCode(warehouse.getWarehouseCode());
+            transaction_in.setWarehouseName(warehouse.getWarehouseName());
+            WmStorageLocation location = wmStorageLocationService.selectWmStorageLocationByLocationCode(UserConstants.VIRTUAL_WS);
+            transaction_in.setLocationId(location.getLocationId());
+            transaction_in.setLocationCode(location.getLocationCode());
+            transaction_in.setLocationName(location.getLocationName());
+            WmStorageArea area = wmStorageAreaService.selectWmStorageAreaByAreaCode(UserConstants.VIRTUAL_WA);
+            transaction_in.setAreaId(area.getAreaId());
+            transaction_in.setAreaCode(area.getAreaCode());
+            transaction_in.setAreaName(area.getAreaName());
+            //设置入库相关联的出库事务ID
+            transaction_in.setRelatedTransactionId(transaction_out.getTransactionId());
+            wmTransactionService.processTransaction(transaction_in);
+        }
+    }
+
+
+    /**
+     * 生产退料
+     * @param lines
+     */
+    @Override
+    public void processRtIssue(List<RtIssueTxBean> lines) {
+        if(CollUtil.isEmpty(lines)){
+            throw new BussinessException("没有需要处理的退料单行");
+        }
+
+        String transactionType_out = UserConstants.TRANSACTION_TYPE_ITEM_RT_ISSUE_OUT;
+        String transactionType_in = UserConstants.TRANSACTION_TYPE_ITEM_RT_ISSUE_IN;
+        for(int i=0;i<lines.size();i++){
+            RtIssueTxBean line = lines.get(i);
+
+            //构造一条目的库存减少的事务
+            WmTransaction transaction_out = new WmTransaction();
+            transaction_out.setTransactionType(transactionType_out);
+            BeanUtils.copyBeanProp(transaction_out,line);
+
+            //这里的出库事务默认从线边库出库到实际仓库
+            WmWarehouse warehouse = wmWarehouseService.selectWmWarehouseByWarehouseCode(UserConstants.VIRTUAL_WH);
+            transaction_out.setWarehouseId(warehouse.getWarehouseId());
+            transaction_out.setWarehouseCode(warehouse.getWarehouseCode());
+            transaction_out.setWarehouseName(warehouse.getWarehouseName());
+            WmStorageLocation location = wmStorageLocationService.selectWmStorageLocationByLocationCode(UserConstants.VIRTUAL_WS);
+            transaction_out.setLocationId(location.getLocationId());
+            transaction_out.setLocationCode(location.getLocationCode());
+            transaction_out.setLocationName(location.getLocationName());
+            WmStorageArea area = wmStorageAreaService.selectWmStorageAreaByAreaCode(UserConstants.VIRTUAL_WA);
+            transaction_out.setAreaId(area.getAreaId());
+            transaction_out.setAreaCode(area.getAreaCode());
+            transaction_out.setAreaName(area.getAreaName());
+
+            transaction_out.setTransactionFlag(-1);//库存减少
+            wmTransactionService.processTransaction(transaction_out);
+
+            //构造一条目的库存增加的事务
+            WmTransaction transaction_in = new WmTransaction();
+            transaction_in.setTransactionType(transactionType_in);
+            BeanUtils.copyBeanProp(transaction_in,line);
+            transaction_in.setTransactionFlag(1);//库存增加
+            transaction_in.setTransactionDate(new Date());
+            //由于是新增的库存记录所以需要将查询出来的库存记录ID置为空
+            transaction_in.setMaterialStockId(null);
+            //设置入库相关联的出库事务ID
+            transaction_in.setRelatedTransactionId(transaction_out.getTransactionId());
+
+            wmTransactionService.processTransaction(transaction_in);
+        }
+    }
+
+    /**
+     * 库存消耗
+     *
+     */
+    public void processItemConsume(List<ItemConsumeTxBean> lines){
+        if(CollUtil.isEmpty(lines)){
+            throw new BussinessException("没有需要处理的原料消耗单行");
+        }
+        String transactionType = UserConstants.TRANSACTION_TYPE_ITEM_CONSUME;
+        for(int i=0;i<lines.size();i++){
+            ItemConsumeTxBean line = lines.get(i);
             WmTransaction transaction = new WmTransaction();
             transaction.setTransactionType(transactionType);
             BeanUtils.copyBeanProp(transaction,line);
-            transaction.setTransactionFlag(-1);//库存减少
+            transaction.setTransactionFlag(-1); //库存减少
+            transaction.setStorageCheckFlag(false);//库存可以为负
+            transaction.setTransactionDate(new Date());
+
+            WmWarehouse warehouse = wmWarehouseService.selectWmWarehouseByWarehouseCode(UserConstants.VIRTUAL_WH);
+            transaction.setWarehouseId(warehouse.getWarehouseId());
+            transaction.setWarehouseCode(warehouse.getWarehouseCode());
+            transaction.setWarehouseName(warehouse.getWarehouseName());
+            WmStorageLocation location = wmStorageLocationService.selectWmStorageLocationByLocationCode(UserConstants.VIRTUAL_WS);
+            transaction.setLocationId(location.getLocationId());
+            transaction.setLocationCode(location.getLocationCode());
+            transaction.setLocationName(location.getLocationName());
+            WmStorageArea area = wmStorageAreaService.selectWmStorageAreaByAreaCode(UserConstants.VIRTUAL_WA);
+            transaction.setAreaId(area.getAreaId());
+            transaction.setAreaCode(area.getAreaCode());
+            transaction.setAreaName(area.getAreaName());
+
+            wmTransactionService.processTransaction(transaction);
+        }
+    }
+
+    /**
+     * 产品产出
+     *
+     */
+    public void processProductProduce(List<ProductProductTxBean> lines){
+        if(CollUtil.isEmpty(lines)){
+            throw new BussinessException("没有需要处理的产品产出单行");
+        }
+        String transactionType = UserConstants.TRANSACTION_TYPE_PRODUCT_PRODUCE;
+        for(int i=0;i<lines.size();i++){
+            ProductProductTxBean line = lines.get(i);
+            WmTransaction transaction = new WmTransaction();
+            transaction.setTransactionType(transactionType);
+            BeanUtils.copyBeanProp(transaction,line);
+            transaction.setTransactionFlag(1); //库存增加
+            transaction.setTransactionDate(new Date());
+
+            WmWarehouse warehouse = wmWarehouseService.selectWmWarehouseByWarehouseCode(UserConstants.VIRTUAL_WH);
+            transaction.setWarehouseId(warehouse.getWarehouseId());
+            transaction.setWarehouseCode(warehouse.getWarehouseCode());
+            transaction.setWarehouseName(warehouse.getWarehouseName());
+            WmStorageLocation location = wmStorageLocationService.selectWmStorageLocationByLocationCode(UserConstants.VIRTUAL_WS);
+            transaction.setLocationId(location.getLocationId());
+            transaction.setLocationCode(location.getLocationCode());
+            transaction.setLocationName(location.getLocationName());
+            WmStorageArea area = wmStorageAreaService.selectWmStorageAreaByAreaCode(UserConstants.VIRTUAL_WA);
+            transaction.setAreaId(area.getAreaId());
+            transaction.setAreaCode(area.getAreaCode());
+            transaction.setAreaName(area.getAreaName());
+
+            wmTransactionService.processTransaction(transaction);
+        }
+    }
+
+
+    /**
+     * 产品入库
+     * @param lines
+     */
+    @Override
+    public void processProductRecpt(List<ProductRecptTxBean> lines) {
+        if(CollUtil.isEmpty(lines)){
+            throw new BussinessException("没有需要处理的产品入库单行");
+        }
+        String transactionType_out = UserConstants.TRANSACTION_TYPE_PRODUCT_RECPT_OUT;
+        String transactionType_in = UserConstants.TRANSACTION_TYPE_PRODUCT_RECPT_IN;
+
+        for(int i=0;i<lines.size();i++){
+            ProductRecptTxBean line = lines.get(i);
+
+            //构造一条目的库存减少的事务
+            WmTransaction transaction_out = new WmTransaction();
+            transaction_out.setTransactionType(transactionType_out);
+            BeanUtils.copyBeanProp(transaction_out,line);
+
+            //这里的产品入库是从线边库入到实际的仓库，出库事务对应的仓库是线边库
+            WmWarehouse warehouse = wmWarehouseService.selectWmWarehouseByWarehouseCode(UserConstants.VIRTUAL_WH);
+            transaction_out.setWarehouseId(warehouse.getWarehouseId());
+            transaction_out.setWarehouseCode(warehouse.getWarehouseCode());
+            transaction_out.setWarehouseName(warehouse.getWarehouseName());
+            WmStorageLocation location = wmStorageLocationService.selectWmStorageLocationByLocationCode(UserConstants.VIRTUAL_WS);
+            transaction_out.setLocationId(location.getLocationId());
+            transaction_out.setLocationCode(location.getLocationCode());
+            transaction_out.setLocationName(location.getLocationName());
+            WmStorageArea area = wmStorageAreaService.selectWmStorageAreaByAreaCode(UserConstants.VIRTUAL_WA);
+            transaction_out.setAreaId(area.getAreaId());
+            transaction_out.setAreaCode(area.getAreaCode());
+            transaction_out.setAreaName(area.getAreaName());
+
+            transaction_out.setTransactionFlag(-1);//库存减少
+            transaction_out.setStorageCheckFlag(false); //针对未及时报工的情况，允许线边库的库存临时为负
+            wmTransactionService.processTransaction(transaction_out);
+
+            //构造一条目的库存增加的事务
+            WmTransaction transaction_in = new WmTransaction();
+            transaction_in.setTransactionType(transactionType_in);
+            BeanUtils.copyBeanProp(transaction_in,line);
+            transaction_in.setTransactionFlag(1);//库存增加
+            transaction_in.setTransactionDate(new Date());
+            //由于是新增的库存记录所以需要将查询出来的库存记录ID置为空
+            transaction_in.setMaterialStockId(null);
+            //设置入库相关联的出库事务ID
+            transaction_in.setRelatedTransactionId(transaction_out.getTransactionId());
+
+            wmTransactionService.processTransaction(transaction_in);
+        }
+
+
+    }
+
+    /**
+     * 销售出库
+     * @param lines
+     */
+    @Override
+    public void processProductSalse(List<ProductSalseTxBean> lines) {
+        if(CollUtil.isEmpty(lines)){
+            throw new BussinessException("没有需要处理的产品销售出库单行");
+        }
+
+        String transactionType = UserConstants.TRANSACTION_TYPE_PRODUCT_ISSUE;
+        for(int i=0;i<lines.size();i++){
+            ProductSalseTxBean bean = lines.get(i);
+            WmTransaction transaction = new WmTransaction();
+            transaction.setTransactionType(transactionType);
+            BeanUtils.copyBeanProp(transaction,bean);
+            transaction.setTransactionFlag(-1); //库存减少
             transaction.setTransactionDate(new Date());
             wmTransactionService.processTransaction(transaction);
         }
     }
+
+
 }

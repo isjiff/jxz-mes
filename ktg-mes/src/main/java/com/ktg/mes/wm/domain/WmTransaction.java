@@ -143,10 +143,32 @@ public class WmTransaction extends BaseEntity
     @Excel(name = "ERP账期", width = 30, dateFormat = "yyyy-MM-dd")
     private Date erpDate;
 
+    /**
+     * 生产工单ID
+     */
+    private Long workorderId;
+
+    /**
+     * 生产工单编号
+     */
+    @Excel(name = "生产工单编号")
+    private String workorderCode;
+
+    /** 入库日期 */
+    @JsonFormat(pattern = "yyyy-MM-dd hh:mm:ss")
+    @Excel(name = "入库日期", width = 30, dateFormat = "yyyy-MM-dd hh:mm:ss")
+    private Date recptDate;
+
     /** 库存有效期 */
     @JsonFormat(pattern = "yyyy-MM-dd")
     @Excel(name = "库存有效期", width = 30, dateFormat = "yyyy-MM-dd")
     private Date expireDate;
+
+    /**
+     * 是否检查库存量
+     * 如果设置为True则库存不允许为负
+     */
+    private boolean storageCheckFlag;
 
     /** 预留字段1 */
     @Excel(name = "预留字段1")
@@ -443,7 +465,32 @@ public class WmTransaction extends BaseEntity
     {
         return erpDate;
     }
-    public void setExpireDate(Date expireDate) 
+
+    public Long getWorkorderId() {
+        return workorderId;
+    }
+
+    public void setWorkorderId(Long workorderId) {
+        this.workorderId = workorderId;
+    }
+
+    public String getWorkorderCode() {
+        return workorderCode;
+    }
+
+    public void setWorkorderCode(String workorderCode) {
+        this.workorderCode = workorderCode;
+    }
+
+    public Date getRecptDate() {
+        return recptDate;
+    }
+
+    public void setRecptDate(Date recptDate) {
+        this.recptDate = recptDate;
+    }
+
+    public void setExpireDate(Date expireDate)
     {
         this.expireDate = expireDate;
     }
@@ -489,49 +536,57 @@ public class WmTransaction extends BaseEntity
         return attr4;
     }
 
+    public boolean isStorageCheckFlag() {
+        return storageCheckFlag;
+    }
+
+    public void setStorageCheckFlag(boolean storageCheckFlag) {
+        this.storageCheckFlag = storageCheckFlag;
+    }
+
     @Override
     public String toString() {
-        return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
-            .append("transactionId", getTransactionId())
-            .append("transactionType", getTransactionType())
-            .append("itemId", getItemId())
-            .append("itemCode", getItemCode())
-            .append("itemName", getItemName())
-            .append("specification", getSpecification())
-            .append("unitOfMeasure", getUnitOfMeasure())
-            .append("batchCode", getBatchCode())
-            .append("warehouseId", getWarehouseId())
-            .append("warehouseCode", getWarehouseCode())
-            .append("warehouseName", getWarehouseName())
-            .append("locationId", getLocationId())
-            .append("locationCode", getLocationCode())
-            .append("locationName", getLocationName())
-            .append("areaId", getAreaId())
-            .append("areaCode", getAreaCode())
-            .append("areaName", getAreaName())
-            .append("vendorId", getVendorId())
-            .append("vendorCode", getVendorCode())
-            .append("vendorName", getVendorName())
-            .append("vendorNick", getVendorNick())
-            .append("sourceDocType", getSourceDocType())
-            .append("sourceDocId", getSourceDocId())
-            .append("sourceDocCode", getSourceDocCode())
-            .append("sourceDocLineId", getSourceDocLineId())
-            .append("materialStockId", getMaterialStockId())
-            .append("transactionFlag", getTransactionFlag())
-            .append("transactionQuantity", getTransactionQuantity())
-            .append("transactionDate", getTransactionDate())
-            .append("relatedTransactionId", getRelatedTransactionId())
-            .append("erpDate", getErpDate())
-            .append("expireDate", getExpireDate())
-            .append("attr1", getAttr1())
-            .append("attr2", getAttr2())
-            .append("attr3", getAttr3())
-            .append("attr4", getAttr4())
-            .append("createBy", getCreateBy())
-            .append("createTime", getCreateTime())
-            .append("updateBy", getUpdateBy())
-            .append("updateTime", getUpdateTime())
-            .toString();
+        return "WmTransaction{" +
+                "transactionId=" + transactionId +
+                ", transactionType='" + transactionType + '\'' +
+                ", itemId=" + itemId +
+                ", itemCode='" + itemCode + '\'' +
+                ", itemName='" + itemName + '\'' +
+                ", specification='" + specification + '\'' +
+                ", unitOfMeasure='" + unitOfMeasure + '\'' +
+                ", batchCode='" + batchCode + '\'' +
+                ", warehouseId=" + warehouseId +
+                ", warehouseCode='" + warehouseCode + '\'' +
+                ", warehouseName='" + warehouseName + '\'' +
+                ", locationId=" + locationId +
+                ", locationCode='" + locationCode + '\'' +
+                ", locationName='" + locationName + '\'' +
+                ", areaId=" + areaId +
+                ", areaCode='" + areaCode + '\'' +
+                ", areaName='" + areaName + '\'' +
+                ", vendorId=" + vendorId +
+                ", vendorCode='" + vendorCode + '\'' +
+                ", vendorName='" + vendorName + '\'' +
+                ", vendorNick='" + vendorNick + '\'' +
+                ", sourceDocType='" + sourceDocType + '\'' +
+                ", sourceDocId=" + sourceDocId +
+                ", sourceDocCode='" + sourceDocCode + '\'' +
+                ", sourceDocLineId=" + sourceDocLineId +
+                ", materialStockId=" + materialStockId +
+                ", transactionFlag=" + transactionFlag +
+                ", transactionQuantity=" + transactionQuantity +
+                ", transactionDate=" + transactionDate +
+                ", relatedTransactionId=" + relatedTransactionId +
+                ", erpDate=" + erpDate +
+                ", workorderId=" + workorderId +
+                ", workorderCode='" + workorderCode + '\'' +
+                ", recptDate=" + recptDate +
+                ", expireDate=" + expireDate +
+                ", storageCheckFlag=" + storageCheckFlag +
+                ", attr1='" + attr1 + '\'' +
+                ", attr2='" + attr2 + '\'' +
+                ", attr3=" + attr3 +
+                ", attr4=" + attr4 +
+                '}';
     }
 }

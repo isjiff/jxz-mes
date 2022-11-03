@@ -119,9 +119,7 @@ public class AutoCodeUtil {
             rs.setGenDate(DateUtil.format(LocalDateTime.now(),"yyyyMMddHHmmss"));
             rs.setLastResult(autoCode);
             rs.setGenIndex(1);
-            if(lastSerialNo!=null && lastSerialNo.length()!= 0) {//解决Cannot parse null string报错问题
-                rs.setLastSerialNo(Integer.parseInt(lastSerialNo));
-            }
+            rs.setLastSerialNo(Integer.parseInt(lastSerialNo));
             rs.setLastInputChar(inputChar);
             iAutoCodeResultService.saveAutoCodeResult(rs);
         }else{
@@ -134,9 +132,7 @@ public class AutoCodeUtil {
             rs.setLastResult(autoCode);
             rs.setGenDate(DateUtil.format(LocalDateTime.now(),"yyyyMMddHHmmss"));
             rs.setGenIndex(rs.getGenIndex()+1);
-            if(lastSerialNo!=null && lastSerialNo.length()!= 0) {//解决Cannot parse null string报错问题
-                rs.setLastSerialNo(Integer.parseInt(lastSerialNo));
-            }
+            rs.setLastSerialNo(Integer.parseInt(lastSerialNo));
             rs.setLastInputChar(inputChar);
             iAutoCodeResultService.updateAutoCodeResult(rs);
         }

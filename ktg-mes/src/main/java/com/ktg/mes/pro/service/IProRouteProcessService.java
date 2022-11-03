@@ -1,6 +1,8 @@
 package com.ktg.mes.pro.service;
 
 import java.util.List;
+
+import com.ktg.mes.pro.domain.ProFeedback;
 import com.ktg.mes.pro.domain.ProRouteProcess;
 
 /**
@@ -40,6 +42,20 @@ public interface IProRouteProcessService
      * @return
      */
     public String checkProcessExists(ProRouteProcess proRouteProcess);
+
+    /**
+     * 检查当前工艺路线中是否已经有某个工序配置了update_flag=Y
+     * @param proRouteProcess
+     * @return
+     */
+    public String checkUpdateFlagUnique(ProRouteProcess proRouteProcess);
+
+    /**
+     * 检查某个报工单对应的工序是否是关键工序
+     * @param feedback
+     * @return
+     */
+    public boolean checkKeyProcess(ProFeedback feedback);
 
     /**
      * 查找上一个工序
@@ -86,4 +102,11 @@ public interface IProRouteProcessService
      * @return 结果
      */
     public int deleteProRouteProcessByRecordId(Long recordId);
+
+    /**
+     * 根据工艺路线ID删除所有工序配置
+     * @param routeId
+     * @return
+     */
+    public int deleteByRouteId(Long routeId);
 }

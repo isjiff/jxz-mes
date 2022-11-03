@@ -57,6 +57,16 @@
         >删除</el-button>
       </el-col>
 
+      <el-col :span="1.5">
+        <el-button
+          type="success"
+          icon="el-icon-s-tools"
+          size="mini"
+          @click="handleConfig"
+          v-hasPermi="['mes:wm:barcode:edit']"
+        >条码设置</el-button>
+      </el-col>
+
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
@@ -84,7 +94,11 @@
       <el-table-column label="条码内容" align="center" prop="barcodeContent" />
       <el-table-column label="业务编码" align="center" prop="bussinessCode" />
       <el-table-column label="业务名称" align="center" prop="bussinessName" />
-      <el-table-column label="是否生效" align="center" prop="enableFlag" />
+      <el-table-column label="是否生效" align="center" prop="enableFlag" >
+        <template slot-scope="scope">
+          <dict-tag :options="dict.type.sys_yes_no" :value="scope.row.enableFlag"/>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -414,6 +428,10 @@ export default {
           this.form.bussinessName = obj.itemName;
           this.form.barcodeContent= "".concat(this.form.barcodeType,'-',this.form.bussinessCode);
         }
+    },
+    //条码配置
+    handleConfig(){
+    	console.log("handleConfig...");
     },
   }
 };

@@ -34,15 +34,11 @@
             AND rule_id = #{ruleId}
         </if>
         <if test="ruleCode != null and ruleCode != ''">
-            AND rule_code like concat('%', #{ruleCode}, '%')
+            AND rule_code = #{ruleCode}
         </if>
 
         <if test="ruleName != null and ruleName != ''">
             AND rule_name like concat('%', #{ruleName}, '%')
-        </if>
-        
-        <if test="enableFlag != null and enableFlag != ''">
-            AND enable_flag = #{enableFlag}
         </if>
     </select>
 
@@ -107,7 +103,6 @@
     <update id="updateSysAutoCodeRule" parameterType="SysAutoCodeRule">
         update sys_auto_code_rule
         <set>
-        	rule_code = #{ruleCode},
             rule_name = #{ruleName},
             <if test="ruleDesc !=null and ruleDesc !=''">rule_desc = #{ruleDesc},</if>
             max_length = #{maxLength},

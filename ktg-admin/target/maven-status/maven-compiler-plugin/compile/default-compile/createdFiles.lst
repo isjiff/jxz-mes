@@ -20,6 +20,7 @@ com\ktg\web\controller\monitor\CacheController.class
 com\ktg\web\controller\system\SysRegisterController.class
 com\ktg\web\controller\system\SysDeptController.class
 com\ktg\web\core\config\SwaggerConfig.class
+com\ktg\HelloWorld.class
 com\ktg\web\controller\system\SysAutoCodePartController.class
 com\ktg\web\controller\monitor\ServerController.class
 com\ktg\web\controller\monitor\SysOperlogController.class
